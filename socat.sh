@@ -2,36 +2,57 @@
 
 # Help function
 usage () {
-echo -e "Example: ./adv-socat.sh -d 192.168.1.1 -p 80,443,8080"
-echo -e "Options:"
-echo -e "  -d    Destination IP address"
-echo -e "  -p    TCP ports to forward (comma seperated)"
-echo
+    echo -e "Example: ./socat.sh -d 192.168.1.1 -p 80,443,8080"
+    echo -e "Options:"
+    echo -e "  -d    Destination IP address"
+    echo -e "  -p    TCP ports to forward (comma seperated)"
+    echo
+}
+
+check_env () {
+    # Check if tmux is installed
+    if [ $(which tmux) ]; then
+        echo "[+] Tmux is installed"
+    else
+        echo "[ERROR] Tmux is not installed"
+        exit 1
+    fi
+
+    # Check if a socat session exists
+    if [ $(tmux ls -F '#{session_name}' | grep -c 'socat') -eq 0 ]; then
+        echo "[+] No tmux sessions named socat are running"
+        echo
+    else
+        echo "[ERROR] A socat session might already be running"
+        exit 1
+    fi
 }
 
 # Get command line arguments
 while getopts ":d:p:" option; do
     case "${option}" in
         d) destination=${OPTARG};;
-        p) port=${OPTARG};;
+        p) ports=${OPTARG};;
         *) usage; exit;;
     esac
 done
 shift "$((OPTIND-1))"
 
 # Check if arguments are empty
-if [ -z "$destination" ] || [ -z "$port" ]; then
+if [ -z "$destination" ] || [ -z "$ports" ]; then
     # Print help menu if they are empty
     usage
 else
+    # Run the check environment function
+    check_env
+
     echo "Destination: ${destination}"
 
     # Create new session named socat
     tmux new -d -s socat
 
-    # Split ports by comma
-    port_list=$port
-    for i in $(echo $port_list | sed "s/,/ /g")
+    # Loop through ports split by comma
+    for i in $(echo $ports | sed "s/,/ /g")
     # Create new windows within socat session
     do
         tmux neww -d -n "$i" -t socat
