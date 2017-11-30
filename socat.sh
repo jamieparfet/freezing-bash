@@ -11,18 +11,19 @@ usage () {
 
 check_env () {
     # Check if tmux is installed
-    if [ $(which tmux) ]; then
-        echo "[+] Tmux is installed"
-    else
-        echo "[ERROR] Tmux is not installed"
+    if ! [ $(command -v tmux) ]; then
+        echo "[ERROR] tmux is not installed"
+        exit 1
+    fi
+
+    # Check if socat is installed
+    if ! [ $(command -v socat) ]; then
+        echo "[ERROR] socat is not installed"
         exit 1
     fi
 
     # Check if a socat session exists
-    if [ $(tmux ls -F '#{session_name}' | grep -c 'socat') -eq 0 ]; then
-        echo "[+] No tmux sessions named socat are running"
-        echo
-    else
+    if ! [ $(tmux ls -F '#{session_name}' | grep -c 'socat') -eq 0 ]; then
         echo "[ERROR] A socat session might already be running"
         exit 1
     fi
@@ -53,9 +54,10 @@ else
 
     # Loop through ports split by comma
     for i in $(echo $ports | sed "s/,/ /g")
-    # Create new windows within socat session
     do
+        # Create new window in socat session
         tmux neww -d -n "$i" -t socat
+        # Send the window a socat command
         tmux send -t socat:"$i" "socat TCP4-LISTEN:$i,fork TCP4:${destination}:$i" ENTER
         echo "[*] Forwarding port $i"
     done
