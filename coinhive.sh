@@ -53,5 +53,8 @@ else
 	# Get htop going
 	tmux neww -d -n htop -t coin
 	tmux send -t coin:htop "htop" ENTER
+	
+	#kill bash window
+	tmux killw -t coin:1
 
 fi
