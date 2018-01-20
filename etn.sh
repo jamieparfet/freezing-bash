@@ -10,7 +10,7 @@ usage () {
 }
 
 # Get command line arguments
-while getopts ":n:p:" option; do
+while getopts ":n:t:" option; do
     case "${option}" in
         n) name=${OPTARG};;
 	t) threads=${OPTARG};;
