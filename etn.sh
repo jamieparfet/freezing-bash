@@ -2,7 +2,7 @@
 
 # Help function
 usage () {
-    echo -e "Example: ./etn.sh -n google2 -p minekitten"
+    echo -e "Example: ./etn.sh -n google2 -t 4"
     echo -e "Options:"
     echo -e "  -n    Name of the server (to be used in tmux window)"
     echo -e "  -t    Number of threads"
@@ -26,6 +26,7 @@ if [ -z "$name" ] || [ -z "$threads" ]; then
 else
 
 	stratum="etn.easyhash.io:3630"
+	wallet="etnkNshfGNVTZbF2919Gv84yXs14Bn1Ys41VMJ73izbajQ6fkJAFrzQSLeX5wmWtDMZ43P4BAPGVZZnuTkFcqHm74oQELZdcSK"
 
 	# apt update & apt upgrade
 	sudo apt update
@@ -38,7 +39,7 @@ else
 	source .bashrc
 
 	# Install dependecies
-	sudo apt-get -y install build-essential autotools-dev autoconf libcurl3 libcurl4-gnutls-dev
+	sudo apt-get -y install tmux git build-essential autotools-dev autoconf libcurl3 libcurl4-gnutls-dev
 
 	# Get miner
 	git clone https://github.com/OhGodAPet/cpuminer-multi.git
@@ -55,7 +56,7 @@ else
 	# Create window in new session with pool name
 	tmux neww -d -n cpu-"$threads" -t "$name"
 	# Send miner command to window using stratum variable to specify pool
-	tmux send -t "$name":cpu-"$threads" "sudo minerd -a cryptonight -o stratum+tcp://$stratum -u etnkNshfGNVTZbF2919Gv84yXs14Bn1Ys41VMJ73izbajQ6fkJAFrzQSLeX5wmWtDMZ43P4BAPGVZZnuTkFcqHm74oQELZdcSK -p x -t $threads" ENTER
+	tmux send -t "$name":cpu-"$threads" "sudo minerd -a cryptonight -o stratum+tcp://$stratum -u $wallet -p x -t $threads" ENTER
 
 	# Clean up tmux, kill empty bash window
 	tmux killw -t "$name":1
